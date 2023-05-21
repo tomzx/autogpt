@@ -12,4 +12,4 @@ class ReviewTasks(Task):
         """
 
     def process_response(self, response: str) -> TaskResponse:
-        return TaskResponse(next_queries=[])
+        return TaskResponse([])

@@ -34,8 +34,18 @@ class Notion:
         )
 
     def create_interaction(
-        self, prompt: str, response: str, session: str, parent: str, cost: float,
+        self,
+        prompt: str,
+        response: str,
+        task: str,
+        session: str,
+        parent: str,
+        cost: float,
     ) -> Dict[str, Any]:
+        # TODO(tom@tomrochette.com): Handle prompts that are longer than 2000 characters
+        # by putting the text in a separate field
+        if len(prompt) > 2000:
+            prompt = prompt[:2000]
         properties = {
             "Prompt": {
                 "title": [
@@ -51,6 +61,15 @@ class Notion:
                     {
                         "text": {
                             "content": response,
+                        },
+                    },
+                ],
+            },
+            "Task": {
+                "rich_text": [
+                    {
+                        "text": {
+                            "content": task,
                         },
                     },
                 ],

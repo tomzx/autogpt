@@ -53,6 +53,8 @@ class Agent:
         middlewares = [
             # CallLLM(Debug()),
             CallLLM(Api(os.environ.get("OPENAI_API_KEY"))),
+            # TODO(tom@tomrochette.com): Add a middleware that would prevent the CallLLM
+            # middleware from being called if the task does not need to call the LLM.
             RememberInteraction(RAM(), self.session),
             SaveToNotion(Notion(), self.money_budget),
             SaveToDatabase(self.session.model()),
@@ -68,6 +70,7 @@ class Agent:
     def execute(
         self,
         request: str,
+        task: str,
         budget: Optional[float] = None,
         notion_interaction_id: Optional[str] = None,
     ) -> None:
@@ -77,27 +80,35 @@ class Agent:
 
         middlewares = self.get_middleware()
 
-        initial_request = Request(request)
+        # TODO(tom@tomrochette.com): We need to know if we're asked to execute
+        # a single query or a query that will require a graph to be resolved.
+        # In the case of a graph, we will want to execute the nodes that can
+        # be executed once their dependencies have been resolved.
+        initial_request = Request(request, task)
         initial_request.notion_interaction_id = notion_interaction_id
         # TODO(tom@tomrochette.com): Replace with a priority
-        queries = deque([initial_request])
+        requests = deque([initial_request])
         while True:
-            if not queries:
-                logger.debug("No more queries to process")
+            if not requests:
+                logger.debug("No more requests to process")
                 break
 
             if self.should_terminate():
                 logger.debug("Budget exhausted")
                 break
 
-            request = queries.popleft()
+            request = requests.popleft()
+
+            # Set properties on the request
+            request.session = self.session
+
             response = call(middlewares, request)
             logger.debug("Response", response=response.response)
 
-            queries.extend(response.next_queries)
+            requests.extend(response.next_requests)
             # computation = []
             # for next_query in response.next_queries:
-            #     computation += [execute(next_query.prompt, self.money_budget.budget, next_query.notion_interaction_id)]
+            #     computation += [execute(next_query.prompt, next_query.task, self.money_budget.budget, next_query.notion_interaction_id)]
             #
             # compute(*computation)
 
@@ -112,6 +123,9 @@ class Agent:
 
 
 def execute(
-    query: str, budget: Optional[float], notion_interaction_id: Optional[str] = None
+    query: str,
+    task: str,
+    budget: Optional[float],
+    notion_interaction_id: Optional[str] = None,
 ) -> None:
-    Agent().execute(query, budget, notion_interaction_id)
+    Agent().execute(query, task, budget, notion_interaction_id)

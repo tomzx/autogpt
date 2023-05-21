@@ -15,6 +15,7 @@ if __name__ == "__main__":
     argument_parser = ArgumentParser()
     argument_parser.add_argument("prompt")
     argument_parser.add_argument("--budget", type=float)
+    argument_parser.add_argument("--task", type=str, default="simple")
 
     args = argument_parser.parse_args()
 
@@ -27,7 +28,7 @@ if __name__ == "__main__":
         print(f"Could not connect to scheduler: {e}")
         exit(1)
 
-    response = delayed(execute)(args.prompt, args.budget).compute()
+    response = delayed(execute)(args.prompt, args.task, args.budget).compute()
 
     # response = client.submit(execute, args.prompt, args.budget)
 

@@ -38,12 +38,15 @@ For the session database, you need to create a database with the following prope
 * Interactions: Relation to the interactions database
 * Budget: Budget for the session
 * Total cost (optional): Rollup, using th `Cost` property of the `Interactions` relation, calculate the sum
+* Duration (optional): Rollup, using the `Duration` property of the `Interactions` relation, calculate the date range
+* Total interactions (optional): Rollup, using the `Interactions` property of the `Interactions` relation, calculate the count
 * Created time (optional)
 * Last edited time (optional)
 
 For the interactions database, you need to create a database with the following properties:
 * Prompt
 * Response
+* Task
 * Cost
 * Parent (relation to the interactions database, parent interaction)
 * Children (relation to the interactions database, children interactions)

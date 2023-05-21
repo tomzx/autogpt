@@ -1,14 +1,16 @@
-import os
 from typing import Callable
 
 import structlog
 
 from autogpt.backends.base import LLMBase
-from autogpt.backends.openai.api import Api
 from autogpt.middlewares.middleware import Middleware
 from autogpt.middlewares.request import Request
 from autogpt.middlewares.response import Response
-from autogpt.tasks.start import Start
+from autogpt.tasks.query_multiple_personas import QueryMultiplePersonas
+from autogpt.tasks.simple import Simple
+from autogpt.tasks.summarize import Summarize
+from autogpt.tasks.summarize_multiple_personas import SummarizeMultiplePersonas
+from autogpt.tasks.summarize_responses import SummarizeResponses
 
 logger = structlog.get_logger(__name__)
 
@@ -18,13 +20,24 @@ class CallLLM(Middleware):
         self.backend = backend
 
     def handle(self, request: Request, next: Callable[[Request], Response]) -> Response:
-        # TODO(tom.rochette@coreteks.org): Decide which task to execute
-        task = Start()
+        # TODO(tom.rochette@coreteks.org): Generalize task selection process
+        # i.e., use a registry + a name attribute to identify the tasks
+        task = Simple()
+        if request.task == "query-multiple-personas":
+            task = QueryMultiplePersonas()
+        elif request.task == "summarize-multiple-personas":
+            task = SummarizeMultiplePersonas()
+        elif request.task == "summarize-responses":
+            task = SummarizeResponses(request.session)
+        elif request.task == "summarize":
+            task = Summarize()
+
         query = task.prompt(request.prompt)
         logger.debug(f"Generated query", query=query)
 
-        response = self.backend.query(query)
-        next_queries = task.process_response(response.response).next_queries
-        next_queries = [Request(next_query) for next_query in next_queries]
+        response = Response("", [], 0)
+        if query != "":
+            response = self.backend.query(query)
+        next_requests = task.process_response(response.response).next_requests
 
-        return Response(response.response, next_queries, response.cost)
+        return Response(response.response, next_requests, response.cost)

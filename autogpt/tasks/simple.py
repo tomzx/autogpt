@@ -1,15 +1,9 @@
-import structlog
-
 from autogpt.tasks.base import Task, TaskResponse
 
-logger = structlog.get_logger(__name__)
 
-
-class ReviewCodebase(Task):
+class Simple(Task):
     def generate_prompt(self, query: str) -> str:
-        return f"""
-        {query}
-        """
+        return query
 
     def process_response(self, response: str) -> TaskResponse:
         return TaskResponse([])

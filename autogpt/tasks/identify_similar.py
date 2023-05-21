@@ -1,4 +1,4 @@
-from autogpt.tasks.base import Task
+from autogpt.tasks.base import Task, TaskResponse
 
 
 class IdentifySimilar(Task):
@@ -8,5 +8,5 @@ class IdentifySimilar(Task):
         {query}
         """
 
-    def process_response(self, response: str) -> None:
-        pass
+    def process_response(self, response: str) -> TaskResponse:
+        return TaskResponse([])

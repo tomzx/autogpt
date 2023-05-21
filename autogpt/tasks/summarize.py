@@ -1,13 +1,10 @@
-import structlog
-
 from autogpt.tasks.base import Task, TaskResponse
 
-logger = structlog.get_logger(__name__)
 
-
-class ReviewCodebase(Task):
+class Summarize(Task):
     def generate_prompt(self, query: str) -> str:
         return f"""
+        Summarize the following text:
         {query}
         """
 

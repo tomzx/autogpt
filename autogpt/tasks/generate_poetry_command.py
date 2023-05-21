@@ -1,6 +1,6 @@
 import structlog
 
-from autogpt.tasks.base import Task
+from autogpt.tasks.base import Task, TaskResponse
 
 logger = structlog.get_logger(__name__)
 
@@ -12,7 +12,7 @@ class GeneratePoetryCommand(Task):
         {query}
         """
 
-    def process_response(self, response: str) -> None:
+    def process_response(self, response: str) -> TaskResponse:
         if "```" not in response:
             raise ValueError("Response does not contain code.")
 
@@ -23,3 +23,4 @@ class GeneratePoetryCommand(Task):
                 logger.warning("Line does not start with poetry, skipping", line=line)
 
         # TODO(tom@tomrochette.com): Execute commands in container
+        return TaskResponse([])

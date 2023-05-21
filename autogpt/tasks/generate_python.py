@@ -1,6 +1,6 @@
 from autogpt.commands.filesytem.write_file import WriteFile
 from autogpt.commands.run_in_container import StartContainer
-from autogpt.tasks.base import Task
+from autogpt.tasks.base import Task, TaskResponse
 from autogpt.utils.response_helper import extract_code
 from autogpt.workspace.workspace import Workspace
 
@@ -12,7 +12,7 @@ class GeneratePython(Task):
         {query}
         """
 
-    def process_response(self, response: str) -> None:
+    def process_response(self, response: str) -> TaskResponse:
         code, language = extract_code(response)
         if language != "python":
             raise ValueError("Response does not contain Python code.")
@@ -25,3 +25,4 @@ class GeneratePython(Task):
         StartContainer("python:latest", f"python /app/main.py", [f"{workspace}:/app"])()
 
         # TODO(tom@tomrochette.com): Determine what to do given the script has executed
+        return TaskResponse([])

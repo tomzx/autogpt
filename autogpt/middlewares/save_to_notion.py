@@ -25,12 +25,13 @@ class SaveToNotion(Middleware):
             interaction = self.notion.create_interaction(
                 request.prompt,
                 response.response,
+                request.task,
                 self.session["id"],
                 request.notion_interaction_id,
-                response.cost,
+                round(response.cost, 6),
             )
 
-            for next_query in response.next_queries:
+            for next_query in response.next_requests:
                 next_query.notion_interaction_id = interaction["id"]
 
         return response

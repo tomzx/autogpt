@@ -10,4 +10,6 @@ class TestLLMBase(LLMBase):
 
 
 def test_call_llm():
-    assert CallLLM(TestLLMBase()).handle(Request("test"), None) == Response("", [], 0)
+    assert CallLLM(TestLLMBase()).handle(Request("test", "simple"), None) == Response(
+        "", [], 0
+    )

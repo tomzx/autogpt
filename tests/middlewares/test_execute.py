@@ -25,7 +25,7 @@ def test_call():
         AfterMiddleware(),
     ]
 
-    request = Request("test")
+    request = Request("test", "simple")
     response = call(middlewares, request)
 
     assert response
