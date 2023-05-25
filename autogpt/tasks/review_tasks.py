@@ -1,5 +1,5 @@
 from autogpt.tasks.base import Task, TaskResponse
-
+from autogpt.tasks.next_requests import NextRequests
 
 class ReviewTasks(Task):
     """
@@ -12,4 +12,4 @@ class ReviewTasks(Task):
         """
 
     def process_response(self, response: str) -> TaskResponse:
-        return TaskResponse([])
+        return TaskResponse(NextRequests())

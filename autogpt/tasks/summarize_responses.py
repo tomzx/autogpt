@@ -1,52 +1,45 @@
+from typing import List
+
 import structlog
 import tiktoken
 
 from autogpt.backends.openai.message import AssistantMessage
 from autogpt.middlewares.request import Request
+from autogpt.middlewares.request_graph import RequestGraph
+from autogpt.middlewares.response import Response
 from autogpt.session.session import Session
 from autogpt.tasks.base import Task, TaskResponse
+from autogpt.tasks.next_requests import NextRequests
 
 logger = structlog.get_logger(__name__)
 
 
 class SummarizeResponses(Task):
-    def __init__(self, session: Session) -> None:
+    def __init__(self, needs: List[Response]) -> None:
         super().__init__()
-        self.past_response_count = 0
-        self.session = session
+        self.needs = needs
 
     def generate_prompt(self, query: str) -> str:
-        self.past_response_count = int(query)
-        logger.debug(
-            "Will summarize past responses",
-            past_response_count=self.past_response_count,
-        )
         return ""
 
     def process_response(self, response: str) -> TaskResponse:
         responses = []
         tokens = 0
-        for response in reversed(self.session.messages):
-            if isinstance(response, AssistantMessage):
-                # TODO(tom@tomrochette.com): Get model from somewhere, request maybe?
-                tokens += len(
-                    tiktoken.encoding_for_model("gpt-3.5-turbo").encode(
-                        response.content
-                    )
+        for response in self.needs:
+            # TODO(tom@tomrochette.com): Get model from somewhere, request maybe?
+            tokens += len(tiktoken.encoding_for_model("gpt-3.5-turbo").encode(response.response))
+            if tokens > 4000:
+                logger.debug(
+                    "Too many tokens to summarize, summary content will be truncated",
+                    tokens=tokens,
+                    max_tokens=4000,
+                    past_response_count=len(responses),
+                    max_past_response_count=len(self.needs),
                 )
-                if tokens > 4000:
-                    logger.debug(
-                        "Too many tokens to summarize, summary content will be truncated",
-                        tokens=tokens,
-                        max_tokens=4000,
-                        past_response_count=len(responses),
-                        max_past_response_count=self.past_response_count,
-                    )
-                    break
+                break
 
-                responses += [response.content]
+            responses += [response.response]
 
-                if len(responses) >= self.past_response_count:
-                    break
-
-        return TaskResponse([Request("\n".join(reversed(responses)), "summarize")])
+        next_requests = NextRequests()
+        next_requests.add(Request("\n".join(reversed(responses)), "summarize"))
+        return TaskResponse(next_requests)

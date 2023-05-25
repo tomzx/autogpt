@@ -2,6 +2,7 @@ from autogpt.backends.base import LLMBase, LLMResponse
 from autogpt.middlewares.call_llm import CallLLM
 from autogpt.middlewares.request import Request
 from autogpt.middlewares.response import Response
+from autogpt.tasks.next_requests import NextRequests
 
 
 class TestLLMBase(LLMBase):
@@ -10,6 +11,4 @@ class TestLLMBase(LLMBase):
 
 
 def test_call_llm():
-    assert CallLLM(TestLLMBase()).handle(Request("test", "simple"), None) == Response(
-        "", [], 0
-    )
+    assert CallLLM(TestLLMBase()).handle(Request("test", "simple"), None) == Response("", NextRequests(), 0)

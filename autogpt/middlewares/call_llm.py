@@ -6,6 +6,7 @@ from autogpt.backends.base import LLMBase
 from autogpt.middlewares.middleware import Middleware
 from autogpt.middlewares.request import Request
 from autogpt.middlewares.response import Response
+from autogpt.tasks.next_requests import NextRequests
 from autogpt.tasks.query_multiple_personas import QueryMultiplePersonas
 from autogpt.tasks.simple import Simple
 from autogpt.tasks.summarize import Summarize
@@ -28,16 +29,18 @@ class CallLLM(Middleware):
         elif request.task == "summarize-multiple-personas":
             task = SummarizeMultiplePersonas()
         elif request.task == "summarize-responses":
-            task = SummarizeResponses(request.session)
+            task = SummarizeResponses(request.needs)
         elif request.task == "summarize":
             task = Summarize()
 
         query = task.prompt(request.prompt)
         logger.debug(f"Generated query", query=query)
 
-        response = Response("", [], 0)
+        response = Response("", NextRequests(), 0)
         if query != "":
-            response = self.backend.query(query)
-        next_requests = task.process_response(response.response).next_requests
+            llm_response = self.backend.query(query)
+            response.response = llm_response.response
+            response.cost = llm_response.cost
+        response.next_requests = task.process_response(response.response).next_requests
 
-        return Response(response.response, next_requests, response.cost)
+        return response

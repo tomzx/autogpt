@@ -1,5 +1,5 @@
 from autogpt.tasks.base import Task, TaskResponse
-
+from autogpt.tasks.next_requests import NextRequests
 
 class Summarize(Task):
     def generate_prompt(self, query: str) -> str:
@@ -9,4 +9,4 @@ class Summarize(Task):
         """
 
     def process_response(self, response: str) -> TaskResponse:
-        return TaskResponse([])
+        return TaskResponse(NextRequests())

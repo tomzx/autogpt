@@ -1,6 +1,7 @@
 import structlog
 
 from autogpt.tasks.base import Task, TaskResponse
+from autogpt.tasks.next_requests import NextRequests
 
 logger = structlog.get_logger(__name__)
 
@@ -23,4 +24,4 @@ class GeneratePoetryCommand(Task):
                 logger.warning("Line does not start with poetry, skipping", line=line)
 
         # TODO(tom@tomrochette.com): Execute commands in container
-        return TaskResponse([])
+        return TaskResponse(NextRequests())

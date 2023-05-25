@@ -1,6 +1,7 @@
 from autogpt.commands.filesytem.write_file import WriteFile
 from autogpt.commands.run_in_container import StartContainer
 from autogpt.tasks.base import Task, TaskResponse
+from autogpt.tasks.next_requests import NextRequests
 from autogpt.utils.response_helper import extract_code
 from autogpt.workspace.workspace import Workspace
 
@@ -25,4 +26,4 @@ class GeneratePython(Task):
         StartContainer("python:latest", f"python /app/main.py", [f"{workspace}:/app"])()
 
         # TODO(tom@tomrochette.com): Determine what to do given the script has executed
-        return TaskResponse([])
+        return TaskResponse(NextRequests())

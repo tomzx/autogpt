@@ -1,10 +1,12 @@
 import asyncio
 import os
+import time
 from collections import deque
 from typing import List, Optional
 
 import structlog
 from dask import compute, delayed
+from distributed.threadpoolexecutor import ThreadPoolExecutor
 from dotenv import load_dotenv
 from tortoise import Tortoise
 
@@ -18,10 +20,14 @@ from autogpt.middlewares.middleware import Middleware
 from autogpt.middlewares.profiler import Profiler
 from autogpt.middlewares.remember_interaction import RememberInteraction
 from autogpt.middlewares.request import Request
+from autogpt.middlewares.response import Response
+from autogpt.middlewares.response_graph import ResponseGraph
 from autogpt.middlewares.save_to_database import SaveToDatabase
 from autogpt.middlewares.save_to_notion import SaveToNotion
 from autogpt.notion.notion import Notion
 from autogpt.session.session import Session
+from autogpt.tasks.next_requests import NextRequests
+from autogpt.utils.debug import is_debug, is_profiling
 
 logger = structlog.get_logger(__name__)
 
@@ -50,9 +56,12 @@ class Agent:
         await Tortoise.generate_schemas()
 
     def get_middleware(self) -> List[Middleware]:
+        llm = Debug()
+        if not is_debug():
+            llm = Api(os.environ.get("OPENAI_API_KEY"))
+
         middlewares = [
-            # CallLLM(Debug()),
-            CallLLM(Api(os.environ.get("OPENAI_API_KEY"))),
+            CallLLM(llm),
             # TODO(tom@tomrochette.com): Add a middleware that would prevent the CallLLM
             # middleware from being called if the task does not need to call the LLM.
             RememberInteraction(RAM(), self.session),
@@ -60,7 +69,7 @@ class Agent:
             SaveToDatabase(self.session.model()),
         ]
 
-        if os.environ.get("DEBUG") == "1":
+        if is_profiling():
             for index, middleware in enumerate(middlewares):
                 middlewares[index] = Profiler(middleware)
 
@@ -86,8 +95,10 @@ class Agent:
         # be executed once their dependencies have been resolved.
         initial_request = Request(request, task)
         initial_request.notion_interaction_id = notion_interaction_id
+        next_requests = NextRequests()
+        next_requests.add(initial_request)
         # TODO(tom@tomrochette.com): Replace with a priority
-        requests = deque([initial_request])
+        requests = deque([next_requests])
         while True:
             if not requests:
                 logger.debug("No more requests to process")
@@ -97,20 +108,17 @@ class Agent:
                 logger.debug("Budget exhausted")
                 break
 
-            request = requests.popleft()
+            request_graph = requests.popleft()
 
             # Set properties on the request
-            request.session = self.session
+            request_graph.session = self.session
 
-            response = call(middlewares, request)
+            response_graph = execute_graph(request_graph, middlewares)
+            response = response_graph.get_output()
             logger.debug("Response", response=response.response)
 
-            requests.extend(response.next_requests)
-            # computation = []
-            # for next_query in response.next_queries:
-            #     computation += [execute(next_query.prompt, next_query.task, self.money_budget.budget, next_query.notion_interaction_id)]
-            #
-            # compute(*computation)
+            if len(response.next_requests.nodes) > 0:
+                requests += [response.next_requests]
 
             self.money_budget.update_spent_budget(response.cost)
 
@@ -129,3 +137,19 @@ def execute(
     notion_interaction_id: Optional[str] = None,
 ) -> None:
     Agent().execute(query, task, budget, notion_interaction_id)
+
+
+def execute_graph(request_graph: NextRequests, middlewares):
+    futures = {}
+    with ThreadPoolExecutor() as executor:
+        for node in request_graph.nodes:
+            needs_futures = [futures[need] for need in node.needs]
+            futures[node] = executor.submit(call_middleware, middlewares, node.request, needs_futures)
+
+    return ResponseGraph([future.result() for future in futures.values()])
+
+
+def call_middleware(middlewares, request: Request, needs) -> Response:
+    if needs:
+        request.needs = [future.result() for future in needs]
+    return call(middlewares, request)

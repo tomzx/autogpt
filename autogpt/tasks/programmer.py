@@ -2,6 +2,7 @@ from datetime import datetime
 
 from autogpt.middlewares.request import Request
 from autogpt.tasks.base import Task, TaskResponse
+from autogpt.tasks.next_requests import NextRequests
 from autogpt.utils.lists import extract_list
 from autogpt.utils.response_helper import extract_code
 
@@ -49,8 +50,10 @@ class Programmer(Task):
         # TODO(tom@tomrochette.com): Extract the steps from the response
         # and determine the next actions to take.
 
-        next_requests = extract_list(response)
-        next_requests = [Request(next_query, "simple") for next_query in next_requests]
+        items = extract_list(response)
+        next_requests = NextRequests()
+        for item in items:
+            next_requests.add(Request(item, "simple"))
         # TODO(tom@tomrochette.com): Create a prompt from the statements
 
         return TaskResponse(next_requests)
@@ -60,4 +63,4 @@ class Programmer(Task):
         # if language != "python":
         #     raise ValueError("Response does not contain Python code.")
         #
-        # return TaskResponse([])
+        # return TaskResponse(NextRequests())

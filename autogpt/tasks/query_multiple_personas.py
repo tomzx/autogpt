@@ -6,6 +6,7 @@ import yaml
 from autogpt import ROOT_DIR
 from autogpt.middlewares.request import Request
 from autogpt.tasks.base import Task, TaskResponse
+from autogpt.tasks.next_requests import NextRequests
 
 
 class QueryMultiplePersonas(Task):
@@ -20,7 +21,7 @@ class QueryMultiplePersonas(Task):
         return ""
 
     def process_response(self, response: str) -> TaskResponse:
-        next_requests = []
+        next_requests = NextRequests()
         for persona in self.personas:
-            next_requests += [Request(persona["prompt"] + "\n" + self.query, "simple")]
+            next_requests.add(Request(persona["prompt"] + "\n" + self.query, "simple"))
         return TaskResponse(next_requests)
