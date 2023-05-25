@@ -2,7 +2,7 @@ import time
 
 import structlog
 from openai import APIError, ChatCompletion
-from openai.openai_response import OpenAIResponse
+from tenacity import Retrying, stop_after_delay, wait_exponential
 
 from autogpt.backends.base import LLMBase, LLMResponse
 from autogpt.backends.openai.cost_calculator import CostCalculator
@@ -27,15 +27,18 @@ class Api(LLMBase):
         try:
             logger.debug("Sending request to OpenAI API", query=query, model=model)
             start_time = time.time()
-            response = ChatCompletion.create(
-                api_key=self.api_key,
-                model=model,
-                messages=[
-                    UserMessage(query).to_dict(),
-                ],
-                temperature=0.7,
-            )
-
+            for attempt in Retrying(
+                stop=stop_after_delay(30), wait=wait_exponential(1, min=1, max=10)
+            ):
+                with attempt:
+                    response = ChatCompletion.create(
+                        api_key=self.api_key,
+                        model=model,
+                        messages=[
+                            UserMessage(query).to_dict(),
+                        ],
+                        temperature=0.7,
+                    )
         except APIError as e:
             raise QueryExecutionError(e)
 
