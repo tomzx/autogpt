@@ -13,9 +13,7 @@ def return_json(output: Optional[Dict[str, Any]] = None) -> str:
     return prompt
 
 
-def return_yaml(
-    output: Optional[Dict[str, Any]] = None, default_flow_style: bool = False
-) -> str:
+def return_yaml(output: Optional[Dict[str, Any]] = None, default_flow_style: bool = False) -> str:
     prompt = "Return your response in YAML format."
     if output is not None:
         prompt += " Use the following format for your output:\n"

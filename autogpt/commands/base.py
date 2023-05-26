@@ -17,9 +17,7 @@ class Command:
         return []
 
     def __call__(self) -> str:
-        return (
-            subprocess.check_output(self.command(), shell=True).decode("utf-8").strip()
-        )
+        return subprocess.check_output(self.command(), shell=True).decode("utf-8").strip()
 
     @classmethod
     def get_signature(cls) -> List[inspect.Parameter]:

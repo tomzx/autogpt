@@ -19,9 +19,7 @@ class SaveToDatabase(Middleware):
         self.session = session
 
     async def write_interaction(self, request: Request, response: Response) -> None:
-        interaction = Interaction(
-            prompt=request.prompt, response=response.response, session=self.session
-        )
+        interaction = Interaction(prompt=request.prompt, response=response.response, session=self.session)
         await interaction.save()
 
     def handle(self, request: Request, next: Callable[[Request], Response]) -> Response:

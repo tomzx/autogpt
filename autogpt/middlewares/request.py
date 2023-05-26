@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import List, Optional, TYPE_CHECKING
+
+from typing import TYPE_CHECKING, List, Optional
 
 from autogpt.session.session import Session
 
 if TYPE_CHECKING:
     from autogpt.middlewares.response import Response
+
 
 class Request:
     task: str

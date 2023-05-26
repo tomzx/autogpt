@@ -25,9 +25,7 @@ def count_list_items(text: str) -> int:
     Returns:
         int: The number of items in the list.
     """
-    return sum(
-        re.match(r"^(\d+\.|-|\*)", line) is not None for line in text.splitlines()
-    )
+    return sum(re.match(r"^(\d+\.|-|\*)", line) is not None for line in text.splitlines())
 
 
 def extract_list(text: str) -> List[str]:

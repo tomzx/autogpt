@@ -27,9 +27,7 @@ class Api(LLMBase):
         try:
             logger.debug("Sending request to OpenAI API", query=query, model=model)
             start_time = time.time()
-            for attempt in Retrying(
-                stop=stop_after_delay(30), wait=wait_exponential(1, min=1, max=10)
-            ):
+            for attempt in Retrying(stop=stop_after_delay(30), wait=wait_exponential(1, min=1, max=10)):
                 with attempt:
                     response = ChatCompletion.create(
                         api_key=self.api_key,
@@ -45,9 +43,7 @@ class Api(LLMBase):
         content = response.choices[0].message.content
 
         duration = round(time.time() - start_time)
-        logger.debug(
-            "Received response from OpenAI API", response=content, duration=duration
-        )
+        logger.debug("Received response from OpenAI API", response=content, duration=duration)
         cost = CostCalculator().calculate(response.usage.total_tokens, model)
         logger.debug("Usage statistics", usage=response.usage.to_dict(), cost=cost)
 

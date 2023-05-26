@@ -6,9 +6,7 @@ from autogpt.middlewares.response import Response
 
 
 def call(middlewares: List[Middleware], request: Request) -> Response:
-    def wrapper(
-        request: Request, middleware: Middleware, action: Middleware
-    ) -> Callable[[Request], Response]:
+    def wrapper(request: Request, middleware: Middleware, action: Middleware) -> Callable[[Request], Response]:
         return lambda request: middleware(request, action)
 
     action = lambda request: Response("", [], 0)

@@ -1,6 +1,7 @@
 from autogpt.tasks.base import Task, TaskResponse
 from autogpt.tasks.next_requests import NextRequests
 
+
 class ReviewTasks(Task):
     """
     Review the tasks estimated effort, value, and deadline.
