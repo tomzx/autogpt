@@ -1,4 +1,4 @@
-from autogpt.tasks.next_requests import NextRequests
+from autogpt.middlewares.next_requests import NextRequests
 
 
 class Response:

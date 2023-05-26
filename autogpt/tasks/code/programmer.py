@@ -1,10 +1,7 @@
-from datetime import datetime
-
+from autogpt.middlewares.next_requests import NextRequests
 from autogpt.middlewares.request import Request
 from autogpt.tasks.base import Task, TaskResponse
-from autogpt.tasks.next_requests import NextRequests
 from autogpt.utils.lists import extract_list
-from autogpt.utils.response_helper import extract_code
 
 
 class Programmer(Task):

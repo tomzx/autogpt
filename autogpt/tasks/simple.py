@@ -1,5 +1,5 @@
+from autogpt.middlewares.next_requests import NextRequests
 from autogpt.tasks.base import Task, TaskResponse
-from autogpt.tasks.next_requests import NextRequests
 
 
 class Simple(Task):

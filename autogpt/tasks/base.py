@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import textwrap
-from typing import List
 
-from autogpt.middlewares.request import Request
-from autogpt.tasks.next_requests import NextRequests
+from autogpt.middlewares.next_requests import NextRequests
 
 
 class Task:

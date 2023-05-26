@@ -4,9 +4,9 @@ from typing import Dict, List
 import yaml
 
 from autogpt import ROOT_DIR
+from autogpt.middlewares.next_requests import NextRequests
 from autogpt.middlewares.request import Request
 from autogpt.tasks.base import Task, TaskResponse
-from autogpt.tasks.next_requests import NextRequests
 
 
 class QueryMultiplePersonas(Task):

@@ -4,14 +4,14 @@ import structlog
 
 from autogpt.backends.base import LLMBase
 from autogpt.middlewares.middleware import Middleware
+from autogpt.middlewares.next_requests import NextRequests
 from autogpt.middlewares.request import Request
 from autogpt.middlewares.response import Response
-from autogpt.tasks.next_requests import NextRequests
-from autogpt.tasks.query_multiple_personas import QueryMultiplePersonas
 from autogpt.tasks.simple import Simple
-from autogpt.tasks.summarize import Summarize
-from autogpt.tasks.summarize_multiple_personas import SummarizeMultiplePersonas
-from autogpt.tasks.summarize_responses import SummarizeResponses
+from autogpt.tasks.text.query_multiple_personas import QueryMultiplePersonas
+from autogpt.tasks.text.summarize import Summarize
+from autogpt.tasks.text.summarize_multiple_personas import SummarizeMultiplePersonas
+from autogpt.tasks.text.summarize_responses import SummarizeResponses
 
 logger = structlog.get_logger(__name__)
 

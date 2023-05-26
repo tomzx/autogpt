@@ -1,7 +1,7 @@
 from autogpt.commands.filesytem.write_file import WriteFile
 from autogpt.commands.run_in_container import StartContainer
+from autogpt.middlewares.next_requests import NextRequests
 from autogpt.tasks.base import Task, TaskResponse
-from autogpt.tasks.next_requests import NextRequests
 from autogpt.utils.response_helper import extract_code
 from autogpt.workspace.workspace import Workspace
 

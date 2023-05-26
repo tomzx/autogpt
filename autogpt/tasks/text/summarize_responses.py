@@ -3,13 +3,10 @@ from typing import List
 import structlog
 import tiktoken
 
-from autogpt.backends.openai.message import AssistantMessage
+from autogpt.middlewares.next_requests import NextRequests
 from autogpt.middlewares.request import Request
-from autogpt.middlewares.request_graph import RequestGraph
 from autogpt.middlewares.response import Response
-from autogpt.session.session import Session
 from autogpt.tasks.base import Task, TaskResponse
-from autogpt.tasks.next_requests import NextRequests
 
 logger = structlog.get_logger(__name__)
 
