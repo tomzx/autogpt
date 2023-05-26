@@ -11,12 +11,12 @@ logger = structlog.get_logger(__name__)
 class Session:
     def start(self) -> None:
         self.messages = []
-        self.session = models.Session()
-        asyncio.run(self.session.save())
-        logger.debug("Session started", session_id=self.session.id)
+        # self.session = models.Session()
+        # asyncio.run(self.session.save())
+        # logger.debug("Session started", session_id=self.session.id)
 
     def end(self) -> None:
-        asyncio.run(self.session.save())
+        # asyncio.run(self.session.save())
         logger.debug("Session ended")
 
     def model(self) -> models.Session:

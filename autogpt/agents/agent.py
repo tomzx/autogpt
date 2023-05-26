@@ -45,7 +45,7 @@ class Agent:
 
     def initialize(self) -> None:
         load_dotenv(override=True)
-        asyncio.run(self.initialize_database())
+        # asyncio.run(self.initialize_database())
 
     async def initialize_database(self) -> None:
         # TODO(tom@tomrochette.com): Plan for per agent database
@@ -66,7 +66,7 @@ class Agent:
             # middleware from being called if the task does not need to call the LLM.
             RememberInteraction(RAM(), self.session),
             SaveToNotion(Notion(), self.money_budget),
-            SaveToDatabase(self.session.model()),
+            # SaveToDatabase(self.session.model()),
         ]
 
         if is_profiling():
