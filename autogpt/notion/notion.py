@@ -20,9 +20,7 @@ class Notion:
                     "title": [
                         {
                             "text": {
-                                "content": datetime.now().isoformat(
-                                    timespec="milliseconds"
-                                ),
+                                "content": datetime.now().isoformat(timespec="milliseconds"),
                             },
                         },
                     ],
@@ -44,14 +42,12 @@ class Notion:
     ) -> Dict[str, Any]:
         # TODO(tom@tomrochette.com): Handle prompts that are longer than 2000 characters
         # by putting the text in a separate field
-        if len(prompt) > 2000:
-            prompt = prompt[:2000]
         properties = {
             "Prompt": {
                 "title": [
                     {
                         "text": {
-                            "content": prompt,
+                            "content": prompt[:2000],
                         },
                     },
                 ],
@@ -60,7 +56,7 @@ class Notion:
                 "rich_text": [
                     {
                         "text": {
-                            "content": response,
+                            "content": response[:2000],
                         },
                     },
                 ],
