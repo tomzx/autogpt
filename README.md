@@ -25,13 +25,21 @@ You can store sessions and interactions in Notion for reviewing/analysis purpose
 
 ```
 NOTION_TOKEN
+NOTION_TASK_DATABASE_ID
 NOTION_SESSION_DATABASE_ID
 NOTION_INTERACTION_DATABASE_ID
 ```
 
 For AutoGPT to interact with your Notion workspace, go to `Settings & members`, then `Connections`, then `Develop or manage integrations`. Click on `New integration`, fill out the form and associate it with the workspace you want to use. Once the integration is created, copy the generated token as `NOTION_TOKEN`.
 
-You then need to create 2 new pages. With the pages created, click on the 3 dots on the top right corner and select `Add connections`, the pick the integration you just created.
+You then need to create 3 new pages. With the pages created, click on the 3 dots on the top right corner and select `Add connections`, the pick the integration you just created. Repeat this process for every page you want to give access.
+
+For the task database, you need to create a database with the following properties:
+* Query: the title property
+* Status: Select, with the following options: `Not started`, `In progress`, `Done`
+* Budget: Budget for the task
+* Created: Creation date time of the task, used to process tasks in ascending order
+* Updated (optional)
 
 For the session database, you need to create a database with the following properties:
 * Id: the title property
@@ -40,8 +48,8 @@ For the session database, you need to create a database with the following prope
 * Total cost (optional): Rollup, using th `Cost` property of the `Interactions` relation, calculate the sum
 * Duration (optional): Rollup, using the `Duration` property of the `Interactions` relation, calculate the date range
 * Total interactions (optional): Rollup, using the `Interactions` property of the `Interactions` relation, calculate the count
-* Created time (optional)
-* Last edited time (optional)
+* Created (optional)
+* Updated (optional)
 
 For the interactions database, you need to create a database with the following properties:
 * Prompt
@@ -51,5 +59,5 @@ For the interactions database, you need to create a database with the following 
 * Parent (relation to the interactions database, parent interaction)
 * Children (relation to the interactions database, children interactions)
 * Sessions (inverse relation to the sessions database)
-* Created time (optional)
-* Last edited time (optional)
+* Created (optional)
+* Updated (optional)

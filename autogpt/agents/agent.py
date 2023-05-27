@@ -1,6 +1,8 @@
 import os
+import time
 from collections import deque
-from typing import List, Optional
+from datetime import datetime
+from typing import List, Optional, Tuple
 
 import structlog
 from distributed.threadpoolexecutor import ThreadPoolExecutor
@@ -22,6 +24,7 @@ from autogpt.middlewares.response import Response
 from autogpt.middlewares.response_graph import ResponseGraph
 from autogpt.middlewares.save_to_notion import SaveToNotion
 from autogpt.notion.notion import Notion
+from autogpt.notion.notion_task import NotionTask
 from autogpt.session.session import Session
 from autogpt.utils.debug import is_debug, is_profiling
 
@@ -38,9 +41,11 @@ class Agent:
     def __init__(self) -> None:
         self.money_budget = MoneyBudget()
         self.session = Session()
+        self.notion: Optional[Notion] = None
 
     def initialize(self) -> None:
         load_dotenv(override=True)
+        self.notion = Notion()
         # asyncio.run(self.initialize_database())
 
     async def initialize_database(self) -> None:
@@ -61,7 +66,7 @@ class Agent:
             # TODO(tom@tomrochette.com): Add a middleware that would prevent the CallLLM
             # middleware from being called if the task does not need to call the LLM.
             RememberInteraction(RAM(), self.session),
-            SaveToNotion(Notion(), self.money_budget),
+            SaveToNotion(self.notion, self.money_budget),
             # SaveToDatabase(self.session.model()),
         ]
 
@@ -77,50 +82,75 @@ class Agent:
         request: str,
         task: str,
         budget: Optional[float] = None,
+        background: bool = False,
         notion_interaction_id: Optional[str] = None,
     ) -> None:
+        logger.debug(
+            "Agent starting",
+            request=request,
+            task=task,
+            budget=budget,
+            background=background,
+            notion_interaction_id=notion_interaction_id,
+        )
+
         self.initialize()
-        self.session.start()
-        self.money_budget.set_budget(budget)
 
         middlewares = self.get_middleware()
 
-        # TODO(tom@tomrochette.com): We need to know if we're asked to execute
-        # a single query or a query that will require a graph to be resolved.
-        # In the case of a graph, we will want to execute the nodes that can
-        # be executed once their dependencies have been resolved.
-        initial_request = Request(request, task)
-        initial_request.notion_interaction_id = notion_interaction_id
-        next_requests = NextRequests()
-        next_requests.add(initial_request)
-        # TODO(tom@tomrochette.com): Replace with a priority
-        requests = deque([next_requests])
-        while True:
-            if not requests:
-                logger.debug("No more requests to process")
-                break
+        initial_request = None
+        while background or initial_request is None:
+            notion_task: Optional[NotionTask] = None
+            if background:
+                logger.debug("Getting task from notion")
+                notion_task = self.notion.get_next_executable_task()
+                if notion_task is None:
+                    logger.debug("No task to process, sleeping for 60 seconds")
+                    time.sleep(60)
+                    continue
+                self.notion.update_task(notion_task, "In progress", datetime.now())
+                logger.debug("Starting task", task=notion_task.task_id)
+                initial_request = notion_task.request
+                budget = notion_task.budget
+            else:
+                if request is None:
+                    raise ValueError("Prompt cannot be empty")
+                initial_request = Request(request, task)
+                initial_request.notion_interaction_id = notion_interaction_id
 
-            if self.should_terminate():
-                logger.debug("Budget exhausted")
-                break
+            self.session.start()
+            self.money_budget.set_budget(budget)
 
-            request_graph = requests.popleft()
+            next_requests = NextRequests()
+            next_requests.add(initial_request)
+            # TODO(tom@tomrochette.com): Replace with a priority
+            requests = deque([next_requests])
 
-            # Set properties on the request
-            request_graph.session = self.session
+            while requests:
+                if self.should_terminate():
+                    logger.debug("Budget exhausted")
+                    break
 
-            response_graph = execute_graph(request_graph, middlewares)
-            response = response_graph.get_output()
-            logger.debug("Response", response=response.response)
+                request_graph = requests.popleft()
 
-            if len(response.next_requests.nodes) > 0:
-                requests += [response.next_requests]
+                response_graph = execute_graph(request_graph, middlewares)
+                response = response_graph.get_output()
+                logger.debug("Response", response=response.response)
 
-            self.money_budget.update_spent_budget(response.cost)
+                if len(response.next_requests.nodes) > 0:
+                    requests += [response.next_requests]
 
-            # TODO(tom@tomrochette.com): Determine when it can delegate to other agents
+                self.money_budget.update_spent_budget(response.cost)
 
-        self.session.end()
+                # TODO(tom@tomrochette.com): Determine when it can delegate to other agents
+
+            logger.debug("No more requests to process")
+
+            self.session.end()
+
+            if notion_task is not None:
+                self.notion.update_task(notion_task, "Done", finished=datetime.now())
+                logger.debug("Task completed", task=notion_task.task_id)
 
     def should_terminate(self) -> bool:
         return self.money_budget.is_budget_reached()
@@ -130,9 +160,10 @@ def execute(
     query: str,
     task: str,
     budget: Optional[float],
+    background: bool = False,
     notion_interaction_id: Optional[str] = None,
 ) -> None:
-    Agent().execute(query, task, budget, notion_interaction_id)
+    Agent().execute(query, task, budget, background, notion_interaction_id)
 
 
 def execute_graph(request_graph: NextRequests, middlewares):
