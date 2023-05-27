@@ -7,7 +7,7 @@ class Summarize(Task):
 
     def generate_prompt(self, query: str) -> str:
         return f"""
-        Summarize the following text:
+        Summarize the following text as a list of bullet points:
         {query}
         """
 
