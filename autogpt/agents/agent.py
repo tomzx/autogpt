@@ -168,7 +168,7 @@ def execute(
 
 def execute_graph(request_graph: NextRequests, middlewares):
     futures = {}
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=100) as executor:
         for node in request_graph.nodes:
             needs_futures = [futures[need] for need in node.needs]
             futures[node] = executor.submit(call_middleware, middlewares, node.request, needs_futures)
