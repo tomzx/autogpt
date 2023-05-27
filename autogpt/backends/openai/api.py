@@ -27,7 +27,7 @@ class Api(LLMBase):
         try:
             logger.debug("Sending request to OpenAI API", query=query, model=model)
             start_time = time.time()
-            for attempt in Retrying(stop=stop_after_delay(30), wait=wait_exponential(1, min=1, max=10)):
+            for attempt in Retrying(stop=stop_after_delay(60), wait=wait_exponential(1, min=1, max=10)):
                 with attempt:
                     response = ChatCompletion.create(
                         api_key=self.api_key,
