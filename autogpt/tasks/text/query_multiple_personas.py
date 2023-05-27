@@ -1,16 +1,7 @@
-from pathlib import Path
-from typing import Dict, List, Optional
-
-import yaml
-
-from autogpt import ROOT_DIR
 from autogpt.middlewares.next_requests import NextRequests
 from autogpt.middlewares.request import Request
 from autogpt.tasks.base import Task, TaskResponse
-
-with Path.open(ROOT_DIR / "data" / "personas.yaml") as f:
-    personas: List[Dict[str, str]] = yaml.load(f, Loader=yaml.SafeLoader)
-
+from autogpt.tasks.text.select_personas import personas
 
 class QueryMultiplePersonas(Task):
     name = "query-multiple-personas"

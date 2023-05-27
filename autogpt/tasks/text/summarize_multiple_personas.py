@@ -1,7 +1,8 @@
 from autogpt.middlewares.next_requests import NextRequests
 from autogpt.middlewares.request import Request
 from autogpt.tasks.base import TaskResponse
-from autogpt.tasks.text.query_multiple_personas import QueryMultiplePersonas, personas
+from autogpt.tasks.text.query_multiple_personas import QueryMultiplePersonas
+from autogpt.tasks.text.select_personas import personas
 
 
 class SummarizeMultiplePersonas(QueryMultiplePersonas):

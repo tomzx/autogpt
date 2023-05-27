@@ -10,6 +10,7 @@ from autogpt.tasks.simple import Simple
 from autogpt.tasks.task.identify_similar_tasks import IdentifySimilarTasks
 from autogpt.tasks.task.review_tasks import ReviewTasks
 from autogpt.tasks.text.query_multiple_personas import QueryMultiplePersonas
+from autogpt.tasks.text.select_personas import SelectPersonas
 from autogpt.tasks.text.summarize import Summarize
 from autogpt.tasks.text.summarize_multiple_personas import SummarizeMultiplePersonas
 from autogpt.tasks.text.summarize_responses import SummarizeResponses
@@ -26,6 +27,7 @@ all_tasks = [
     IdentifySimilarTasks,
     ReviewTasks,
     # Text
+    SelectPersonas,
     QueryMultiplePersonas,
     Summarize,
     SummarizeMultiplePersonas,
