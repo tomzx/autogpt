@@ -1,4 +1,20 @@
-# Getting started
+# AutoGPT
+AutoGPT is a library to automate interactions with a LLM. It is built on top of [OpenAI's ChatGPT](https://openai.com/blog/chatgpt) and [Dask](https://dask.org/).
+
+## Features
+[See roadmap](https://github.com/users/tomzx/projects/1/views/6)
+* Multi-process, multi-thread, distributed using dask
+* Sessions and interactions recorded in Notion
+* Reads tasks from Notion
+* Background mode which polls Notion for new tasks
+* Budget management
+* Tasks
+  * Simple LLM queries
+  * Summarize a text
+  * Query multiple personas
+  * Summarize multiple personas
+
+## Getting started
 * Install python 3.8+
 * Install poetry
 * Install docker (if using docker as a backend)
@@ -6,12 +22,12 @@
 * Clone this repository
 * `poetry install`
 
-## Run without scheduler (local)
+### Run without scheduler (local)
 * Make sure you do not have an environment variable `SCHEDULER_URL` set nor in your `.env` file
 * Run the CLI `python cli.py`
 * You can visit the dask dashboard at http://localhost:8787/
 
-## Run with scheduler (distributed)
+### Run with scheduler (distributed)
 * In your `.env` file, set `SCHEDULER_URL=tcp://localhost:8786`
 * Start one dask scheduler and one to many workers (in the poetry environment)
   * `dask scheduler`
@@ -20,7 +36,7 @@
 * Run the CLI `python cli.py`
 * You can visit the dask dashboard at http://localhost:8787/
 
-# Notion
+## Notion
 You can store sessions and interactions in Notion for reviewing/analysis purposes. To do so, you need to set the following environment variables in your `.env` file:
 
 ```
