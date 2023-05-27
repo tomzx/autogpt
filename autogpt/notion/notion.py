@@ -7,6 +7,7 @@ from notion_client import Client
 
 from autogpt.middlewares.request import Request
 from autogpt.notion.notion_task import NotionTask
+from autogpt.utils.debug import is_debug
 
 logger = structlog.get_logger(__name__)
 
@@ -36,6 +37,14 @@ class Notion:
                 },
             },
         )
+
+    def start_session(self, budget: float) -> Optional[str]:
+        if is_debug() or not self.has_api_token():
+            return None
+
+        session = self.create_session(budget)
+        logger.debug("Notion session started", session_id=session["id"])
+        return session["id"]
 
     def create_interaction(
         self,
@@ -144,7 +153,12 @@ class Notion:
         return NotionTask(Request(request, task), budget, task_id)
 
     def update_task(
-        self, task: NotionTask, status: Optional[str], started: datetime = None, finished: Optional[datetime] = None
+        self,
+        task: NotionTask,
+        status: Optional[str] = None,
+        started: datetime = None,
+        finished: Optional[datetime] = None,
+        session_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         properties = {}
         if status is not None:
@@ -165,6 +179,21 @@ class Notion:
                     "start": finished.isoformat(),
                 },
             }
+        if session_id is not None:
+            properties["Session"] = {
+                "relation": [
+                    {
+                        "id": session_id,
+                    },
+                ],
+            }
 
-        logger.debug("Updating task", task_id=task.task_id, status=status, started=started, finished=finished)
+        logger.debug(
+            "Updating task",
+            task_id=task.task_id,
+            status=status,
+            started=started.isoformat() if started is not None else None,
+            finished=finished.isoformat() if finished is not None else None,
+            session_id=session_id,
+        )
         return self.client.pages.update(page_id=task.task_id, properties=properties)

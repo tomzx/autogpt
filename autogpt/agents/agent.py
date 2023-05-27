@@ -39,12 +39,9 @@ class Agent:
     """
 
     def __init__(self) -> None:
+        load_dotenv(override=True)
         self.money_budget = MoneyBudget()
         self.session = Session()
-        self.notion: Optional[Notion] = None
-
-    def initialize(self) -> None:
-        load_dotenv(override=True)
         self.notion = Notion()
         # asyncio.run(self.initialize_database())
 
@@ -66,7 +63,7 @@ class Agent:
             # TODO(tom@tomrochette.com): Add a middleware that would prevent the CallLLM
             # middleware from being called if the task does not need to call the LLM.
             RememberInteraction(RAM(), self.session),
-            SaveToNotion(self.notion, self.money_budget),
+            SaveToNotion(self.notion),
             # SaveToDatabase(self.session.model()),
         ]
 
@@ -94,8 +91,6 @@ class Agent:
             notion_interaction_id=notion_interaction_id,
         )
 
-        self.initialize()
-
         middlewares = self.get_middleware()
 
         initial_request = None
@@ -117,6 +112,11 @@ class Agent:
                     raise ValueError("Prompt cannot be empty")
                 initial_request = Request(request, task)
                 initial_request.notion_interaction_id = notion_interaction_id
+
+            notion_session_id = self.notion.start_session(budget)
+            if notion_session_id is not None:
+                initial_request.notion_session_id = notion_session_id
+                self.notion.update_task(notion_task, session_id=notion_session_id)
 
             self.session.start()
             self.money_budget.set_budget(budget)
