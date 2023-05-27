@@ -1,5 +1,5 @@
+from autogpt.commands.container.start import StartContainer
 from autogpt.commands.filesytem.write_file import WriteFile
-from autogpt.commands.run_in_container import StartContainer
 from autogpt.middlewares.next_requests import NextRequests
 from autogpt.tasks.base import Task, TaskResponse
 from autogpt.utils.response_helper import extract_code
@@ -7,6 +7,8 @@ from autogpt.workspace.workspace import Workspace
 
 
 class GeneratePython(Task):
+    name = "generate-python"
+
     def generate_prompt(self, query: str) -> str:
         return f"""
         Generate python code for the following task:

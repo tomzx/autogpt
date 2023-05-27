@@ -7,6 +7,7 @@ from autogpt.middlewares.middleware import Middleware
 from autogpt.middlewares.next_requests import NextRequests
 from autogpt.middlewares.request import Request
 from autogpt.middlewares.response import Response
+from autogpt.tasks import all_tasks
 from autogpt.tasks.simple import Simple
 from autogpt.tasks.text.query_multiple_personas import QueryMultiplePersonas
 from autogpt.tasks.text.summarize import Summarize
@@ -21,17 +22,10 @@ class CallLLM(Middleware):
         self.backend = backend
 
     def handle(self, request: Request, next: Callable[[Request], Response]) -> Response:
-        # TODO(tom.rochette@coreteks.org): Generalize task selection process
-        # i.e., use a registry + a name attribute to identify the tasks
-        task = Simple()
-        if request.task == "query-multiple-personas":
-            task = QueryMultiplePersonas()
-        elif request.task == "summarize-multiple-personas":
-            task = SummarizeMultiplePersonas()
-        elif request.task == "summarize-responses":
-            task = SummarizeResponses(request.needs)
-        elif request.task == "summarize":
-            task = Summarize()
+        if request.task in all_tasks:
+            task = all_tasks[request.task](request)
+        else:
+            raise ValueError(f"Unknown task: {request.task}")
 
         query = task.prompt(request.prompt)
         logger.debug(f"Generated query", query=query)

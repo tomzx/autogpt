@@ -1,14 +1,21 @@
 from __future__ import annotations
 
 import textwrap
+from typing import Optional
 
 from autogpt.middlewares.next_requests import NextRequests
+from autogpt.middlewares.request import Request
 
 
 class Task:
     """
     A task is responsible for generating a prompt and processing the associated response.
     """
+
+    name: str
+
+    def __init__(self, request: Optional[Request] = None) -> None:
+        self.request = request
 
     def prompt(self, query: str) -> str:
         return textwrap.dedent(self.generate_prompt(query))

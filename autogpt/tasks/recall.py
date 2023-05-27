@@ -3,6 +3,8 @@ from autogpt.tasks.base import Task, TaskResponse
 
 
 class Recall(Task):
+    name = "recall"
+
     def generate_prompt(self, query: str) -> str:
         return f"""
         Prompt: {query}

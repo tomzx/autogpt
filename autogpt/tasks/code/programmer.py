@@ -5,6 +5,8 @@ from autogpt.utils.lists import extract_list
 
 
 class Programmer(Task):
+    name = "programmer"
+
     def generate_prompt(self, query: str) -> str:
         return f"""
         Prompt: {query}

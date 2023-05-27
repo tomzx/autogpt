@@ -12,9 +12,7 @@ logger = structlog.get_logger(__name__)
 
 
 class SummarizeResponses(Task):
-    def __init__(self, needs: List[Response]) -> None:
-        super().__init__()
-        self.needs = needs
+    name = "summarize-responses"
 
     def generate_prompt(self, query: str) -> str:
         return ""
@@ -22,7 +20,7 @@ class SummarizeResponses(Task):
     def process_response(self, response: str) -> TaskResponse:
         responses = []
         tokens = 0
-        for response in self.needs:
+        for response in self.request.needs:
             # TODO(tom@tomrochette.com): Get model from somewhere, request maybe?
             tokens += len(tiktoken.encoding_for_model("gpt-3.5-turbo").encode(response.response))
             if tokens > 4000:
@@ -31,7 +29,7 @@ class SummarizeResponses(Task):
                     tokens=tokens,
                     max_tokens=4000,
                     past_response_count=len(responses),
-                    max_past_response_count=len(self.needs),
+                    max_past_response_count=len(self.request.needs),
                 )
                 break
 

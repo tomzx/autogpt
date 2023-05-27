@@ -2,11 +2,14 @@ from autogpt.middlewares.next_requests import NextRequests
 from autogpt.tasks.base import Task, TaskResponse
 
 
-class Simple(Task):
-    name = "simple"
+class SummarizeCodeChanges(Task):
+    name = "summarize-code-changes"
 
     def generate_prompt(self, query: str) -> str:
-        return query
+        return f"""
+        Summarize code changes based on the following diff:
+        {query}
+        """
 
     def process_response(self, response: str) -> TaskResponse:
         return TaskResponse(NextRequests())

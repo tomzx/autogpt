@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import yaml
 
@@ -8,13 +8,12 @@ from autogpt.middlewares.next_requests import NextRequests
 from autogpt.middlewares.request import Request
 from autogpt.tasks.base import Task, TaskResponse
 
+with Path.open(ROOT_DIR / "data" / "personas.yaml") as f:
+    personas: List[Dict[str, str]] = yaml.load(f, Loader=yaml.SafeLoader)
+
 
 class QueryMultiplePersonas(Task):
-    def __init__(self):
-        super().__init__()
-        self.query = ""
-        with Path.open(ROOT_DIR / "data" / "personas.yaml") as f:
-            self.personas: List[Dict[str, str]] = yaml.load(f, Loader=yaml.SafeLoader)
+    name = "query-multiple-personas"
 
     def generate_prompt(self, query: str) -> str:
         self.query = query
@@ -22,6 +21,6 @@ class QueryMultiplePersonas(Task):
 
     def process_response(self, response: str) -> TaskResponse:
         next_requests = NextRequests()
-        for persona in self.personas:
+        for persona in personas:
             next_requests.add(Request(persona["prompt"] + "\n" + self.query, "simple"))
         return TaskResponse(next_requests)

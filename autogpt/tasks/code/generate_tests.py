@@ -2,10 +2,12 @@ from autogpt.middlewares.next_requests import NextRequests
 from autogpt.tasks.base import Task, TaskResponse
 
 
-class IdentifySimilar(Task):
+class GenerateTests(Task):
+    name = "generate-tests"
+
     def generate_prompt(self, query: str) -> str:
         return f"""
-        Are there similar tasks in the following list? If so, indicate the task numbers and indicate why.
+        Generate tests for the following code:
         {query}
         """
 

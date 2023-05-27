@@ -7,6 +7,8 @@ logger = structlog.get_logger(__name__)
 
 
 class ReviewCodebase(Task):
+    name = "review-codebase"
+
     def generate_prompt(self, query: str) -> str:
         return f"""
         {query}

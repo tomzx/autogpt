@@ -14,6 +14,7 @@ class Session:
         # self.session = models.Session()
         # asyncio.run(self.session.save())
         # logger.debug("Session started", session_id=self.session.id)
+        logger.debug("Session started")
 
     def end(self) -> None:
         # asyncio.run(self.session.save())

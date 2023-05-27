@@ -7,6 +7,8 @@ logger = structlog.get_logger(__name__)
 
 
 class GeneratePoetryCommand(Task):
+    name = "generate-poetry-command"
+
     def generate_prompt(self, query: str) -> str:
         return f"""
         Generate a list of poetry add commands to install the necessary python libraries for the following imports to work:

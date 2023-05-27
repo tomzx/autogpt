@@ -10,7 +10,6 @@ class Command:
     registry: List[Command] = []
 
     def __init_subclass__(cls, **kwargs):
-        print("Command.__init_subclass__", cls, kwargs)
         cls.registry += [cls]
 
     def command(self) -> List[str]:
