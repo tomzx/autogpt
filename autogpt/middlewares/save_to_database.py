@@ -1,8 +1,6 @@
 import asyncio
 from typing import Callable
 
-from tortoise import Tortoise
-
 from autogpt.middlewares.middleware import Middleware
 from autogpt.middlewares.request import Request
 from autogpt.middlewares.response import Response

@@ -8,11 +8,6 @@ from autogpt.middlewares.next_requests import NextRequests
 from autogpt.middlewares.request import Request
 from autogpt.middlewares.response import Response
 from autogpt.tasks import all_tasks
-from autogpt.tasks.simple import Simple
-from autogpt.tasks.text.query_multiple_personas import QueryMultiplePersonas
-from autogpt.tasks.text.summarize import Summarize
-from autogpt.tasks.text.summarize_multiple_personas import SummarizeMultiplePersonas
-from autogpt.tasks.text.summarize_responses import SummarizeResponses
 
 logger = structlog.get_logger(__name__)
 

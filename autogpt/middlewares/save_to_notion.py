@@ -2,7 +2,6 @@ from typing import Callable
 
 import structlog
 
-from autogpt.budget.money_budget import MoneyBudget
 from autogpt.middlewares.middleware import Middleware
 from autogpt.middlewares.request import Request
 from autogpt.middlewares.response import Response

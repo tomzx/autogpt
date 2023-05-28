@@ -3,6 +3,7 @@ from autogpt.middlewares.request import Request
 from autogpt.tasks.base import Task, TaskResponse
 from autogpt.tasks.text.select_personas import personas
 
+
 class QueryMultiplePersonas(Task):
     name = "query-multiple-personas"
 

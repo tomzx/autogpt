@@ -1,7 +1,6 @@
 from typing import Callable
-from uuid import uuid4
 
-from autogpt.backends.openai.message import AssistantMessage, Message, UserMessage
+from autogpt.backends.openai.message import AssistantMessage, UserMessage
 from autogpt.memory.base import Memory
 from autogpt.middlewares.middleware import Middleware
 from autogpt.middlewares.request import Request

@@ -6,7 +6,7 @@ from tenacity import Retrying, stop_after_delay, wait_exponential
 
 from autogpt.backends.base import LLMBase, LLMResponse
 from autogpt.backends.openai.cost_calculator import CostCalculator
-from autogpt.backends.openai.message import Message, UserMessage
+from autogpt.backends.openai.message import UserMessage
 from autogpt.backends.openai.usage import Usage
 from autogpt.errors import QueryExecutionError
 
