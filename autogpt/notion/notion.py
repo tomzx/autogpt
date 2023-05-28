@@ -1,10 +1,10 @@
-import os
 from datetime import datetime
 from typing import Any, Dict, Optional
 
 import structlog
 from notion_client import Client
 
+from autogpt.configuration.configuration import Configuration
 from autogpt.middlewares.request import Request
 from autogpt.notion.notion_task import NotionTask
 from autogpt.utils.debug import is_debug
@@ -14,14 +14,14 @@ logger = structlog.get_logger(__name__)
 
 class Notion:
     def __init__(self):
-        self.client = Client(auth=os.environ.get("NOTION_TOKEN"))
+        self.client = Client(auth=Configuration.notion_token)
 
     def has_api_token(self) -> bool:
-        return os.environ.get("NOTION_TOKEN") is not None
+        return Configuration.notion_token is not None
 
     def create_session(self, budget: float) -> Dict[str, Any]:
         return self.client.pages.create(
-            parent={"database_id": os.environ.get("NOTION_SESSION_DATABASE_ID")},
+            parent={"database_id": Configuration.notion_session_database_id},
             properties={
                 "Id": {
                     "title": [
@@ -108,13 +108,13 @@ class Notion:
             del properties["Parent"]
 
         return self.client.pages.create(
-            parent={"database_id": os.environ.get("NOTION_INTERACTION_DATABASE_ID")},
+            parent={"database_id": Configuration.notion_interaction_database_id},
             properties=properties,
         )
 
     def find_next_executable_task(self) -> Dict[str, Any]:
         return self.client.databases.query(
-            database_id=os.environ.get("NOTION_TASK_DATABASE_ID"),
+            database_id=Configuration.notion_task_database_id,
             filter={
                 "and": [
                     {

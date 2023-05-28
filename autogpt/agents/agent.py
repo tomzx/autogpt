@@ -1,4 +1,3 @@
-import os
 import time
 from collections import deque
 from datetime import datetime
@@ -6,12 +5,12 @@ from typing import List, Optional
 
 import structlog
 from distributed.threadpoolexecutor import ThreadPoolExecutor
-from dotenv import load_dotenv
 from tortoise import Tortoise
 
 from autogpt.backends.debug.debug import Debug
 from autogpt.backends.openai.api import Api
 from autogpt.budget.money_budget import MoneyBudget
+from autogpt.configuration.configuration import Configuration
 from autogpt.memory.ram import RAM
 from autogpt.middlewares.call_llm import CallLLM
 from autogpt.middlewares.execute import call
@@ -39,7 +38,6 @@ class Agent:
     """
 
     def __init__(self) -> None:
-        load_dotenv(override=True)
         self.money_budget = MoneyBudget()
         self.session = Session()
         self.notion = Notion()
@@ -56,7 +54,7 @@ class Agent:
     def get_middleware(self) -> List[Middleware]:
         llm = Debug()
         if not is_debug():
-            llm = Api(os.environ.get("OPENAI_API_KEY"))
+            llm = Api(Configuration.open_api_key)
 
         middlewares = [
             CallLLM(llm),
