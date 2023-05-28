@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from typing import Dict
 
+from pydantic import BaseModel
 
-class Message:
+
+class Message(BaseModel):
     role: str
     content: str
 
     def __init__(self, role: str, content: str) -> None:
-        self.role = role
-        self.content = content
+        super().__init__(role=role, content=content)
 
     def to_dict(self) -> Dict[str, str]:
         return {"role": self.role, "content": self.content}

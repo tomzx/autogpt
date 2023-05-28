@@ -18,7 +18,7 @@ class Task:
         self.request = request
 
     def prompt(self, query: str) -> str:
-        return textwrap.dedent(self.generate_prompt(query))
+        return textwrap.dedent(self.generate_prompt(query)).strip()
 
     def generate_prompt(self, query: str) -> str:
         """

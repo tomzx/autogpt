@@ -7,6 +7,7 @@ from distributed import Client
 from dotenv import load_dotenv
 
 from autogpt.agents.agent import execute
+from autogpt.configuration.configuration import Configuration
 from autogpt.tasks import all_tasks_names
 
 logger = structlog.get_logger(__name__)
@@ -21,9 +22,7 @@ if __name__ == "__main__":
 
     args = argument_parser.parse_args()
 
-    load_dotenv()
-
-    scheduler_url = os.environ.get("SCHEDULER_URL")
+    scheduler_url = Configuration.scheduler_url
     try:
         client = Client(scheduler_url, timeout=5)
     except OSError as e:

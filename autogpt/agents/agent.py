@@ -51,7 +51,7 @@ class Agent:
         )
         await Tortoise.generate_schemas()
 
-    def get_middleware(self) -> List[Middleware]:
+    def get_middlewares(self) -> List[Middleware]:
         llm = Debug()
         if not is_debug():
             llm = Api(Configuration.open_api_key)
@@ -79,7 +79,7 @@ class Agent:
         budget: Optional[float] = None,
         background: bool = False,
         notion_interaction_id: Optional[str] = None,
-    ) -> None:
+    ) -> Response:
         logger.debug(
             "Agent starting",
             request=request,
@@ -89,9 +89,10 @@ class Agent:
             notion_interaction_id=notion_interaction_id,
         )
 
-        middlewares = self.get_middleware()
+        middlewares = self.get_middlewares()
 
         initial_request = None
+        response = None
         while background or initial_request is None:
             notion_task: Optional[NotionTask] = None
             if background:
@@ -114,7 +115,8 @@ class Agent:
             notion_session_id = self.notion.start_session(budget)
             if notion_session_id is not None:
                 initial_request.notion_session_id = notion_session_id
-                self.notion.update_task(notion_task, session_id=notion_session_id)
+                if notion_task is not None:
+                    self.notion.update_task(notion_task, session_id=notion_session_id)
 
             self.session.start()
             self.money_budget.set_budget(budget)
@@ -131,14 +133,10 @@ class Agent:
 
                 request_graph = requests.popleft()
 
-                response_graph = execute_graph(request_graph, middlewares)
-                response = response_graph.get_output()
-                logger.debug("Response", response=response.response)
+                response = self.execute_one(request_graph, middlewares)
 
                 if len(response.next_requests.nodes) > 0:
                     requests += [response.next_requests]
-
-                self.money_budget.update_spent_budget(response.cost)
 
                 # TODO(tom@tomrochette.com): Determine when it can delegate to other agents
 
@@ -149,6 +147,17 @@ class Agent:
             if notion_task is not None:
                 self.notion.update_task(notion_task, "Done", finished=datetime.now())
                 logger.debug("Task completed", task=notion_task.task_id)
+
+        return response
+
+    def execute_one(self, request_graph: NextRequests, middlewares: List[Middleware]) -> Response:
+        response_graph = execute_graph(request_graph, middlewares)
+        response = response_graph.get_output()
+        logger.debug("Response", response=response.response)
+
+        self.money_budget.update_spent_budget(response.cost)
+
+        return response
 
     def should_terminate(self) -> bool:
         return self.money_budget.is_budget_reached()

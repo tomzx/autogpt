@@ -19,3 +19,5 @@ class Configuration:
     notion_task_database_id = os.environ.get("NOTION_TASK_DATABASE_ID")
     notion_session_database_id = os.environ.get("NOTION_SESSION_DATABASE_ID")
     notion_interaction_database_id = os.environ.get("NOTION_INTERACTION_DATABASE_ID")
+
+    agent_registry_url = os.environ.get("AGENT_REGISTRY_URL")
