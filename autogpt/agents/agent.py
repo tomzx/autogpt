@@ -9,7 +9,7 @@ from tortoise import Tortoise
 
 from autogpt.backends.debug.debug import Debug
 from autogpt.backends.openai.api import Api
-from autogpt.budget.budget import Budget
+from autogpt.budget.budget import BudgetManager
 from autogpt.configuration.configuration import Configuration
 from autogpt.memory.ram import RAM
 from autogpt.middlewares.call_llm import CallLLM
@@ -38,7 +38,7 @@ class Agent:
     """
 
     def __init__(self) -> None:
-        self.budget = Budget()
+        self.budget = BudgetManager()
         self.session = Session()
         self.notion = Notion()
         # asyncio.run(self.initialize_database())

@@ -6,8 +6,13 @@ from autogpt.budget.time_budget import TimeBudget
 
 
 class Budget:
+    """Base budget class for inheritance."""
+    pass
+
+
+class BudgetManager:
     """
-    Composite budget class that manages all budget types.
+    Composite budget manager that manages all budget types.
     
     This class encapsulates different budget types (money, time, etc.)
     and provides a unified interface for budget management.
