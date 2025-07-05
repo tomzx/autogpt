@@ -16,6 +16,8 @@ bokeh = "^3.1.0"
 prometheus-client = "^0.16.0"
 tortoise-orm = "^0.19.3"
 structlog = "^23.1.0"
+requests = "^2.31.0"
+PyYAML = "^6.0"
 redis = {extras = ["hiredis"], version = "^4.5.4"}
 notion-client = "^2.0.0"
 tenacity = "^8.2.2"
