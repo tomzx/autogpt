@@ -9,8 +9,7 @@ from tortoise import Tortoise
 
 from autogpt.backends.debug.debug import Debug
 from autogpt.backends.openai.api import Api
-from autogpt.budget.money_budget import MoneyBudget
-from autogpt.budget.time_budget import TimeBudget
+from autogpt.budget.budget import Budget
 from autogpt.configuration.configuration import Configuration
 from autogpt.memory.ram import RAM
 from autogpt.middlewares.call_llm import CallLLM
@@ -39,11 +38,9 @@ class Agent:
     """
 
     def __init__(self) -> None:
-        self.money_budget = MoneyBudget()
-        self.time_budget = TimeBudget()
+        self.budget = Budget()
         self.session = Session()
         self.notion = Notion()
-        self.start_time = None
         # asyncio.run(self.initialize_database())
 
     async def initialize_database(self) -> None:
@@ -125,12 +122,11 @@ class Agent:
                     self.notion.update_task(notion_task, session_id=notion_session_id)
 
             self.session.start()
-            self.money_budget.set_budget(budget)
+            self.budget.set_money_budget(budget)
             
             # Set up time budget
             if time_budget is not None:
-                self.time_budget.set_budget(timedelta(seconds=time_budget))
-            self.start_time = datetime.now()
+                self.budget.set_time_budget(time_budget)
 
             next_requests = NextRequests()
             next_requests.add(initial_request)
@@ -167,17 +163,16 @@ class Agent:
         response = response_graph.get_output()
         logger.debug("Response", response=response.response)
 
-        self.money_budget.update_spent_budget(response.cost)
+        self.budget.update_money_spent(response.cost)
         
         # Update time budget with elapsed time for this request
-        if self.start_time is not None:
-            elapsed_time = datetime.now() - request_start_time
-            self.time_budget.update_spent_budget(elapsed_time)
+        elapsed_time = datetime.now() - request_start_time
+        self.budget.update_time_spent(elapsed_time)
 
         return response
 
     def should_terminate(self) -> bool:
-        return self.money_budget.is_budget_reached() or self.time_budget.is_budget_reached()
+        return self.budget.is_budget_reached()
 
 
 def execute(
