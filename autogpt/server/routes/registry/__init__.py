@@ -1,1 +1,1 @@
-from autogpt.server.routes.registry import agent
+from autogpt.server.routes.registry import agent  # noqa: F401

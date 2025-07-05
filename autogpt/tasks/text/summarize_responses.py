@@ -3,7 +3,7 @@ import tiktoken
 
 from autogpt.middlewares.next_requests import NextRequests
 from autogpt.middlewares.request import Request
-from autogpt.middlewares.response import Response
+from autogpt.middlewares.response import Response  # noqa: F401
 from autogpt.tasks.base import Task, TaskResponse
 
 logger = structlog.get_logger(__name__)

@@ -1,4 +1,10 @@
+from __future__ import annotations
+
 from tortoise import Model, fields
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from autogpt.models.interaction import Interaction
 
 
 class Session(Model):
