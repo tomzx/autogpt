@@ -1,6 +1,6 @@
 import time
 from collections import deque
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import List, Optional
 
 import structlog
@@ -10,6 +10,7 @@ from tortoise import Tortoise
 from autogpt.backends.debug.debug import Debug
 from autogpt.backends.openai.api import Api
 from autogpt.budget.money_budget import MoneyBudget
+from autogpt.budget.time_budget import TimeBudget
 from autogpt.configuration.configuration import Configuration
 from autogpt.memory.ram import RAM
 from autogpt.middlewares.call_llm import CallLLM
@@ -39,6 +40,8 @@ class Agent:
 
     def __init__(self) -> None:
         self.money_budget = MoneyBudget()
+        self.time_budget = TimeBudget()
+        self._start_time = None
         self.session = Session()
         self.notion = Notion()
         # asyncio.run(self.initialize_database())
@@ -77,6 +80,7 @@ class Agent:
         request: str,
         task: str,
         budget: Optional[float] = None,
+        time_budget_seconds: Optional[int] = None,
         background: bool = False,
         notion_interaction_id: Optional[str] = None,
     ) -> Response:
@@ -85,6 +89,7 @@ class Agent:
             request=request,
             task=task,
             budget=budget,
+            time_budget_seconds=time_budget_seconds,
             background=background,
             notion_interaction_id=notion_interaction_id,
         )
@@ -120,6 +125,10 @@ class Agent:
 
             self.session.start()
             self.money_budget.set_budget(budget)
+            if time_budget_seconds is not None:
+                self.time_budget.set_budget(timedelta(seconds=time_budget_seconds))
+
+            self._start_time = datetime.now()
 
             next_requests = NextRequests()
             next_requests.add(initial_request)
@@ -148,6 +157,8 @@ class Agent:
                 self.notion.update_task(notion_task, "Done", finished=datetime.now())
                 logger.debug("Task completed", task=notion_task.task_id)
 
+            # Time spent is already updated in should_terminate, so nothing to do here
+
         return response
 
     def execute_one(self, request_graph: NextRequests, middlewares: List[Middleware]) -> Response:
@@ -160,17 +171,25 @@ class Agent:
         return response
 
     def should_terminate(self) -> bool:
-        return self.money_budget.is_budget_reached()
+        # Update time budget with elapsed time since start
+        if self._start_time is not None:
+            elapsed = datetime.now() - self._start_time
+            delta = elapsed - self.time_budget.spent_budget
+            if delta.total_seconds() > 0:
+                self.time_budget.update_spent_budget(delta)
+
+        return self.money_budget.is_budget_reached() or self.time_budget.is_budget_reached()
 
 
 def execute(
     query: str,
     task: str,
     budget: Optional[float],
+    time_budget_seconds: Optional[int] = None,
     background: bool = False,
     notion_interaction_id: Optional[str] = None,
 ) -> None:
-    Agent().execute(query, task, budget, background, notion_interaction_id)
+    Agent().execute(query, task, budget, time_budget_seconds, background, notion_interaction_id)
 
 
 def execute_graph(request_graph: NextRequests, middlewares):

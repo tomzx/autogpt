@@ -17,6 +17,7 @@ if __name__ == "__main__":
     argument_parser = ArgumentParser()
     argument_parser.add_argument("--prompt", type=str, help="The prompt to provide to the task")
     argument_parser.add_argument("--budget", type=float, help="Maximum budget to spend before terminating, in USD")
+    argument_parser.add_argument("--time-budget", type=int, dest="time_budget", help="Maximum execution time before terminating, in seconds")
     argument_parser.add_argument("--task", type=str, default="simple", choices=all_tasks_names, help="Task to run")
     argument_parser.add_argument("--background", action="store_true", help="Run in background mode")
 
@@ -29,6 +30,6 @@ if __name__ == "__main__":
         print(f"Could not connect to scheduler: {e}")
         exit(1)
 
-    response = delayed(execute)(args.prompt, args.task, args.budget, args.background).compute()
+    response = delayed(execute)(args.prompt, args.task, args.budget, args.time_budget, args.background).compute()
 
     client.close()
